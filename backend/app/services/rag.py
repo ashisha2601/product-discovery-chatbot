@@ -25,22 +25,57 @@ CHAT_MODEL = "llama-3.1-8b-instant"
 
 def is_side_effect_question(text: str) -> bool:
     """
-    Heuristic intent detection for safety / side‑effect questions.
+    Heuristic intent detection for safety / side‑effect / medical-condition
+    compatibility questions.
+
+    This is intentionally broad so that questions like
+    "I also have PCOS, is it fine to use it?" are treated as safety intent.
     """
     t = text.lower()
-    keywords = [
+
+    # Direct safety wording
+    safety_keywords = [
         "side effect",
         "side-effect",
         "side effects",
         "is it safe",
         "safe to use",
+        "is it okay",
+        "is it ok",
+        "is it fine",
+        "okay to use",
+        "ok to use",
+        "fine to use",
         "harmful",
         "allergy",
         "allergic",
         "contraindication",
         "interaction",
     ]
-    return any(k in t for k in keywords)
+
+    # Common condition words that usually imply a safety context when paired
+    # with a question.
+    condition_keywords = [
+        "pcos",
+        "pregnant",
+        "pregnancy",
+        "bp",
+        "blood pressure",
+        "diabetes",
+        "thyroid",
+    ]
+
+    if any(k in t for k in safety_keywords):
+        return True
+
+    # If the user mentions a condition and is asking a question containing
+    # "use", "take", or "have", treat it as safety intent as well.
+    if "?" in t and any(cond in t for cond in condition_keywords):
+        action_words = [" use ", " take ", " have ", " apply "]
+        if any(a in t for a in action_words):
+            return True
+
+    return False
 
 
 def is_closing_message(text: str) -> bool:
@@ -184,7 +219,7 @@ def run_rag_chat(db: Session, messages: List[ChatMessage]) -> ChatResponse:
         search_query = f"{latest_query} {titles} side effects"
         safety_context = search_duckduckgo_side_effects(search_query)
 
-    system_prompt = (
+    base_prompt = (
         "You are a careful, friendly hair & scalp care advisor for Traya.health products.\n"
         "You ONLY recommend from the candidate products I give you.\n"
         "\n"
@@ -199,11 +234,19 @@ def run_rag_chat(db: Session, messages: List[ChatMessage]) -> ChatResponse:
         "  and this follow-up should come AFTER you describe the recommended products.\n"
         "- Do NOT repeat information the user has already clearly given (for example, if they already said they\n"
         "  have hair fall, don't ask again whether they have hair fall).\n"
-        "- When the user asks about side effects or safety and extra web safety information is provided, use it\n"
-        "  carefully: do not invent side effects, and be conservative. If information is uncertain, clearly say\n"
-        "  you cannot provide medical advice and suggest consulting a doctor.\n"
-        "\n"
-        "Return your answer as pure JSON with this shape:\n"
+    )
+
+    safety_prompt_extra = (
+        "- In this conversation the user is asking about safety, side effects, or whether products are okay "
+        "to use with a medical condition.\n"
+        "- First, directly answer the safety question in clear, cautious language BEFORE you talk about products.\n"
+        "- Use any provided safety context carefully: do not invent side effects, and be conservative.\n"
+        "- Always remind the user that you cannot give medical advice and they should consult their doctor,\n"
+        "  especially for conditions like PCOS, pregnancy, blood pressure issues, diabetes or thyroid problems.\n"
+    )
+
+    json_instructions = (
+        "\nReturn your answer as pure JSON with this shape:\n"
         "{\n"
         '  \"reply\": \"string explanation to the user, including recommendations and an optional single\n'
         '            follow-up question at the end if needed\",\n'
@@ -213,6 +256,15 @@ def run_rag_chat(db: Session, messages: List[ChatMessage]) -> ChatResponse:
         "}\n"
         "Do not include any extra text outside the JSON."
     )
+
+    if safety_intent:
+        system_prompt = base_prompt + safety_prompt_extra + json_instructions
+    else:
+        # Non-safety conversations still mention that we should be cautious and not invent side effects.
+        non_safety_extra = (
+            "- If the user ever hints at side effects or safety, be cautious and suggest consulting a doctor.\n"
+        )
+        system_prompt = base_prompt + non_safety_extra + json_instructions
 
     prompt_context = (
         "Here are the candidate products you can choose from:\n\n"
