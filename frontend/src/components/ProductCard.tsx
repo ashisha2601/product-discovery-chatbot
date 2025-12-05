@@ -7,6 +7,9 @@ interface Props {
 }
 
 export function ProductCard({ product, reason }: Props) {
+  const showPriceAsUnknown =
+    product.price == null || product.price === 0;
+
   return (
     <div className="card">
       {product.image_url && (
@@ -14,8 +17,10 @@ export function ProductCard({ product, reason }: Props) {
       )}
       <div className="card-body">
         <h3 className="card-title">{product.title}</h3>
-        {product.price != null && (
-          <p className="card-price">₹{product.price.toFixed(2)}</p>
+        {showPriceAsUnknown ? (
+          <p className="card-price">Price: N/A – see Traya site for latest price</p>
+        ) : (
+          <p className="card-price">₹{product.price!.toFixed(2)}</p>
         )}
         {product.category && (
           <p className="card-category">{product.category}</p>

@@ -35,6 +35,9 @@ export function ProductDetailPage() {
     return <p className="status error">Product not found.</p>;
   }
 
+  const showPriceAsUnknown =
+    product.price == null || product.price === 0;
+
   return (
     <div>
       <Link to="/" className="back-link">
@@ -52,8 +55,12 @@ export function ProductDetailPage() {
 
         <div className="detail-body">
           <h1>{product.title}</h1>
-          {product.price != null && (
-            <p className="detail-price">₹{product.price.toFixed(2)}</p>
+          {showPriceAsUnknown ? (
+            <p className="detail-price">
+              Price: N/A – please check the Traya site for the latest price
+            </p>
+          ) : (
+            <p className="detail-price">₹{product.price!.toFixed(2)}</p>
           )}
           {product.category && (
             <p className="detail-category">Category: {product.category}</p>
