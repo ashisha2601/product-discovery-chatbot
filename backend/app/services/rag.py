@@ -101,6 +101,48 @@ def is_closing_message(text: str) -> bool:
     ]
     return any(t == c or t.endswith(c) for c in closers)
 
+
+def needs_clarification_first(text: str) -> bool:
+    """
+    Detect very broad / generic queries where it's better to ONLY ask a
+    clarifying question and *not* show product cards yet.
+
+    Example: "hair growth", "recommend something", "hair products" with no
+    clear symptom such as dandruff, hair fall, itchy scalp, etc.
+    """
+    t = text.strip().lower()
+
+    # If the query is extremely short, it's probably too vague.
+    if len(t) < 25:
+        # Allow simple 1–2 word intents like "hair growth", "hair fall".
+        generic_triggers = [
+            "hair growth",
+            "hair products",
+            "recommend something",
+            "recommend products",
+            "suggest something",
+        ]
+        symptom_keywords = [
+            "dandruff",
+            "itchy",
+            "itching",
+            "flaky",
+            "hair fall",
+            "hairfall",
+            "PCOS",
+            "pcos",
+            "dry scalp",
+            "oily scalp",
+            "split ends",
+        ]
+
+        if any(g in t for g in generic_triggers) and not any(
+            s in t for s in symptom_keywords
+        ):
+            return True
+
+    return False
+
 def build_product_text(product: Product) -> str:
     """
     Build a rich text representation of a product for embeddings & context.
@@ -179,6 +221,18 @@ def run_rag_chat(db: Session, messages: List[ChatMessage]) -> ChatResponse:
             reply=(
                 "You're welcome! I'm glad I could help. "
                 "If you have any other hair or scalp concerns later, just come back and ask."
+            ),
+            recommended_products=[],
+        )
+    # For very generic first messages, just ask for clarification and do not
+    # show any product cards yet.
+    if len(user_messages) == 1 and needs_clarification_first(latest_query):
+        return ChatResponse(
+            reply=(
+                "It sounds like you're exploring Traya products in a general way. "
+                "To guide you better, could you share what specific hair or scalp "
+                "concerns you have right now (for example: hair fall, thinning, "
+                "dandruff, dry or itchy scalp, etc.)?"
             ),
             recommended_products=[],
         )
