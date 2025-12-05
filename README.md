@@ -1,6 +1,6 @@
-## Traya Product Discovery Assistant (Neurasearch AI Assignment)
+## Traya Product Discovery Assistant
 
-An end‑to‑end **AI‑powered product discovery assistant** for **Traya.health** hair products.  
+This project is an end‑to‑end **AI‑powered product discovery assistant** for **Traya.health** hair products.  
 It can:
 
 - Scrape real Traya products.
@@ -10,7 +10,7 @@ It can:
 - Answer basic **safety / side‑effect** questions using external web context.
 - Expose a **React + Vite** ecommerce UI (Home, Product Detail, Chat).
 
-This repo is designed to be easy to read for interviewers and to run locally.
+I’ve tried to keep the codebase small, readable, and easy to run locally.
 
 ---
 
@@ -380,13 +380,7 @@ After deployment, the frontend talks to the Render backend just like in local de
 - Add basic **rate limiting & auth** around admin/scraping endpoints.
 - Explore streaming responses in the chat UI for a more “live” feel.
 
-For a deeper dive into each phase of the project, see the additional docs in
-the repo (they are **optional reading**, added only for better understanding):
-
-- `phase-01.md` – backend architecture, scraping, and initial RAG pipeline.
-- `phase-02.md` – frontend structure and how to run everything locally.
-- `phase-03.md` – retrieval strategy, safety handling, and chat behaviour.
-- `phase-04.md` – deployment details (Render + Vercel) and environment config.
-- `phase-05.md` – product thinking and UX rationale.
-- `phase-06.md` – demo/loom script and how to talk about the project in interviews.
+I also kept some personal notes locally (phase‑01 → phase‑06) while building
+this, but they’re not part of the final repo – the README now summarises
+everything you need to understand and run the project.
 
