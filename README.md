@@ -380,9 +380,13 @@ After deployment, the frontend talks to the Render backend just like in local de
 - Add basic **rate limiting & auth** around admin/scraping endpoints.
 - Explore streaming responses in the chat UI for a more “live” feel.
 
-For a deeper dive into each phase, see:
+For a deeper dive into each phase of the project, see the additional docs in
+the repo (they are **optional reading**, added only for better understanding):
 
-- `phase-01.md` – backend architecture, scraping, and RAG.
-- `phase-02.md` – frontend structure and local run instructions.
-
+- `phase-01.md` – backend architecture, scraping, and initial RAG pipeline.
+- `phase-02.md` – frontend structure and how to run everything locally.
+- `phase-03.md` – retrieval strategy, safety handling, and chat behaviour.
+- `phase-04.md` – deployment details (Render + Vercel) and environment config.
+- `phase-05.md` – product thinking and UX rationale.
+- `phase-06.md` – demo/loom script and how to talk about the project in interviews.
 
