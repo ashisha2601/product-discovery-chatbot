@@ -3,3 +3,7 @@ frontend/.env
 node_modules/
 __pycache__/
 backend/.env`
+# Local docs / assignment PDFs (not needed in repo)
+phase-01.md
+phase-02.md
+Neusearch AI – AI Engineering Intern Technical Assignment.pdf
