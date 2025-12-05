@@ -2,3 +2,4 @@ backend/.env
 frontend/.env
 node_modules/
 __pycache__/
+backend/.env`
